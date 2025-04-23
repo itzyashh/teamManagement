@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isTeamMember(teamData) {
+      return isSignedIn() && 
+        teamData.members.hasAny([{'uid': request.auth.uid}]);
+    }
+    
+    function isTeamCreator(teamData) {
+      return isSignedIn() && 
+        teamData.createdBy == request.auth.uid;
+    }
+
+    match /teams/{teamId} {
+      // Allow read if user is a team member
+      allow read: if isSignedIn() && 
+        (resource == null || isTeamMember(resource.data));
+      
+      // Allow create if user is signed in
+      allow create: if isSignedIn() && 
+        request.resource.data.createdBy == request.auth.uid;
+      
+      // Allow update if user is team creator or updating their own member status
+      allow update: if isSignedIn() && (
+        isTeamCreator(resource.data) || 
+        (isTeamMember(resource.data) && 
+         request.resource.data.diff(resource.data).affectedKeys()
+         .hasOnly(['members']))
+      );
+      
+      // Allow delete if user is team creator
+      allow delete: if isSignedIn() && isTeamCreator(resource.data);
+    }
+  }
+} 

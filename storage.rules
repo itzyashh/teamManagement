@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /team-logos/{teamId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write only for team creators
+      allow write: if request.auth != null &&
+        exists(/databases/$(database)/documents/teams/$(teamId)) &&
+        get(/databases/$(database)/documents/teams/$(teamId)).data.createdBy == request.auth.uid;
+    }
+  }
+} 

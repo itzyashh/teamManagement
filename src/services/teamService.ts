@@ -1,5 +1,5 @@
-import { db, storage } from '../config/firebase';
-import { Team, TeamMember } from '../types/team';
+import { db, storage } from '@/config/firebase';
+import { Team, TeamMember } from '@/types/team'
 
 export const teamService = {
   // Create a new team

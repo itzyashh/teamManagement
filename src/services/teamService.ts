@@ -81,5 +81,34 @@ export const teamService = {
   // Update team details
   async updateTeam(teamId: string, updates: Partial<Team>) {
     await db.collection('teams').doc(teamId).update(updates);
+  },
+
+  // Subscribe to team updates
+  subscribeToTeamUpdates(teamId: string, callback: (team: Team) => void) {
+    return db.collection('teams')
+      .doc(teamId)
+      .onSnapshot((doc) => {
+        if (doc.exists) {
+          callback({ id: doc.id, ...doc.data() as Team });
+        }
+      }, (error) => {
+        console.error('Error subscribing to team updates:', error);
+      });
+  },
+
+  // Subscribe to user's teams
+  subscribeToUserTeams(userId: string, callback: (teams: Team[]) => void) {
+    return db.collection('teams')
+      .where('members', 'array-contains', { uid: userId })
+      .onSnapshot((snapshot) => {
+        const teams = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as Team));
+        callback(teams);
+      }, (error) => {
+        console.error('Error subscribing to user teams:', error);
+      });
   }
 }; 
+

@@ -1,6 +1,6 @@
-import { initializeApp } from '@react-native-firebase/app';
-import { getFirestore } from '@react-native-firebase/firestore';
-import { getStorage } from '@react-native-firebase/storage';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import Constants from 'expo-constants';
 
 const firebaseConfig = {

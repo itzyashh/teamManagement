@@ -36,7 +36,7 @@ export const updateTeamMemberStatus = createAsyncThunk('teams/updateTeamMemberSt
     }
 });
 
-const Team = createSlice({
+const TeamSlice = createSlice({
     name: 'teams',
     initialState,
     reducers: {
@@ -78,5 +78,5 @@ const Team = createSlice({
     },
 });
 
-export const { setCurrentTeam, resetError } = Team.actions;
-export default Team.reducer;
+export const { setCurrentTeam, resetError } = TeamSlice.actions;
+export default TeamSlice.reducer;

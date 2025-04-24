@@ -16,7 +16,7 @@ export interface TeamMember {
 export interface Team {
   id?: string;
   name: string;
-  logoUrl: string;
+  logoUrl: string | null;
   createdBy: string;
   createdAt: Date;
   members: TeamMember[];

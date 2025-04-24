@@ -1,12 +1,28 @@
-
 import { Team, TeamMember } from '@/types/team'
-import firestore from '@react-native-firebase/firestore';
-import storage from '@react-native-firebase/storage';
+import { db, storage, auth } from '@/config/firebase'
+import { 
+  addDoc, 
+  collection, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  query, 
+  where, 
+  getDocs,
+  onSnapshot,
+  DocumentData,
+  deleteDoc
+} from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 export const teamService = {
   // Create a new team
   async createTeam(team: Omit<Team, 'id' | 'createdAt'>): Promise<string> {
-    const teamRef = await firestore().collection('teams').add({
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to create a team');
+    }
+    
+    const teamRef = await addDoc(collection(db, 'teams'), {
       ...team,
       createdAt: new Date(),
     });
@@ -15,21 +31,50 @@ export const teamService = {
 
   // Upload team logo
   async uploadTeamLogo(teamId: string, logoFile: any): Promise<string> {
-    const logoRef = storage().ref(`team-logos/${teamId}`);
-    await logoRef.put(logoFile);
-    return await logoRef.getDownloadURL();
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to upload team logo');
+    }
+    
+    const logoRef = ref(storage, `team-logos/${teamId}`);
+    await uploadBytes(logoRef, logoFile);
+    return await getDownloadURL(logoRef);
   },
 
   // Get teams for a user (either created or joined)
   async getUserTeams(userId: string) {
-    const teamsSnapshot = await firestore().collection('teams')
-      .where('members', 'array-contains', { uid: userId })
-      .get();
-    
-    return teamsSnapshot.docs.map((doc: any): Team => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User must be authenticated to get teams');
+      }
+      console.log('userId',userId, typeof userId);
+      
+      // Get all teams that this user might be part of
+      const teamsRef = collection(db, 'teams');
+      const teamsSnapshot = await getDocs(teamsRef);
+      
+      console.log('All teams count:', teamsSnapshot.docs.length);
+      
+      // Filter teams where the user is a member
+      const userTeams = teamsSnapshot.docs
+        .filter(doc => {
+          const data = doc.data();
+          console.log('Team data:', JSON.stringify(data.members));
+          // Check if the user is in the members array
+          return data.members && 
+                 Array.isArray(data.members) && 
+                 data.members.some(member => member.uid === userId);
+        })
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data() as Team
+        }));
+      
+      console.log('Filtered teams count:', userTeams.length);
+      return userTeams;
+    } catch (error) {
+      console.error('Error getting user teams:', error, userId);
+      throw error;
+    }
   },
 
   // Update team member status
@@ -38,14 +83,18 @@ export const teamService = {
     memberId: string,
     status: 'accepted' | 'declined'
   ) {
-    const teamRef = firestore().collection('teams').doc(teamId);
-    const team = await teamRef.get();
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to update member status');
+    }
     
-    if (!team.exists) {
+    const teamRef = doc(db, 'teams', teamId);
+    const teamDoc = await getDoc(teamRef);
+    
+    if (!teamDoc.exists()) {
       throw new Error('Team not found');
     }
 
-    const teamData = team.data() as Team;
+    const teamData = teamDoc.data() as Team;
     const memberIndex = teamData.members.findIndex(m => m.uid === memberId);
     
     if (memberIndex === -1) {
@@ -59,58 +108,107 @@ export const teamService = {
       ...(status === 'accepted' ? { joinedAt: new Date() } : {})
     };
 
-    await teamRef.update({ members: updatedMembers });
+    await updateDoc(teamRef, { members: updatedMembers });
   },
 
   // Update team captain
   async updateTeamCaptain(teamId: string, newCaptainId: string) {
-    const teamRef = firestore().collection('teams').doc(teamId);
-    const team = await teamRef.get();
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to update team captain');
+    }
     
-    if (!team.exists) {
+    const teamRef = doc(db, 'teams', teamId);
+    const teamDoc = await getDoc(teamRef);
+    
+    if (!teamDoc.exists()) {
       throw new Error('Team not found');
     }
 
-    const teamData = team.data() as Team;
+    const teamData = teamDoc.data() as Team;
     const updatedMembers = teamData.members.map(member => ({
       ...member,
       role: member.uid === newCaptainId ? 'captain' : 'player'
     }));
 
-    await teamRef.update({ members: updatedMembers });
+    await updateDoc(teamRef, { members: updatedMembers });
   },
 
   // Update team details
   async updateTeam(teamId: string, updates: Partial<Team>) {
-    await firestore().collection('teams').doc(teamId).update(updates);
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to update team');
+    }
+    
+    const teamRef = doc(db, 'teams', teamId);
+    await updateDoc(teamRef, updates);
+  },
+
+  // Delete team
+  async deleteTeam(teamId: string) {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User must be authenticated to delete team');
+      }
+
+      const teamRef = doc(db, 'teams', teamId);
+      // Check if the user is the captain of the team
+      const teamDoc = await getDoc(teamRef);
+      const teamData = teamDoc.data() as Team;
+      const isCaptain = teamData.members.some(member => member.uid === auth.currentUser?.uid && member.role === 'captain');
+      if (!isCaptain) {
+        throw new Error('User must be the captain of the team to delete it');
+      }
+      await deleteDoc(teamRef);
+      return true;
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      throw error;
+    }
   },
 
   // Subscribe to team updates
   subscribeToTeamUpdates(teamId: string, callback: (team: Team) => void) {
-    return firestore().collection('teams')
-      .doc(teamId)
-      .onSnapshot((doc) => {
-        if (doc.exists) {
+    const teamRef = doc(db, 'teams', teamId);
+    return onSnapshot(teamRef, 
+      (doc) => {
+        if (doc.exists()) {
           callback({ id: doc.id, ...doc.data() as Team });
         }
-      }, (error) => {
+      }, 
+      (error) => {
         console.error('Error subscribing to team updates:', error);
-      });
+      }
+    );
   },
 
   // Subscribe to user's teams
   subscribeToUserTeams(userId: string, callback: (teams: Team[]) => void) {
-    return firestore().collection('teams')
-      .where('members', 'array-contains', { uid: userId })
-      .onSnapshot((snapshot) => {
-        const teams = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Team));
-        callback(teams);
-      }, (error) => {
+    // Subscribe to all teams and filter client-side
+    const teamsRef = collection(db, 'teams');
+    
+    return onSnapshot(
+      teamsRef,
+      (snapshot) => {
+        // Filter teams where the user is a member
+        const userTeams = snapshot.docs
+          .filter(doc => {
+            const data = doc.data();
+            // Check if the user is in the members array
+            return data.members && 
+                   Array.isArray(data.members) && 
+                   data.members.some(member => member.uid === userId);
+          })
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data() as Team
+          }));
+        
+        callback(userTeams);
+      },
+      (error) => {
         console.error('Error subscribing to user teams:', error);
-      });
+      }
+    );
   }
 }; 
 

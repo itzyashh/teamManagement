@@ -44,6 +44,7 @@ const Login = () => {
         email: user.email,
         uid: user.uid,
         username: userData?.username,
+        fullName: userData?.fullName,
         photoURL: userData?.photoURL || ''
       }))
       router.push('/');

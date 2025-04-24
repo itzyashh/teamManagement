@@ -1,10 +1,12 @@
-import { db, storage } from '@/config/firebase';
+
 import { Team, TeamMember } from '@/types/team'
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
 export const teamService = {
   // Create a new team
   async createTeam(team: Omit<Team, 'id' | 'createdAt'>): Promise<string> {
-    const teamRef = await db.collection('teams').add({
+    const teamRef = await firestore().collection('teams').add({
       ...team,
       createdAt: new Date(),
     });
@@ -13,14 +15,14 @@ export const teamService = {
 
   // Upload team logo
   async uploadTeamLogo(teamId: string, logoFile: any): Promise<string> {
-    const logoRef = storage.ref(`team-logos/${teamId}`);
+    const logoRef = storage().ref(`team-logos/${teamId}`);
     await logoRef.put(logoFile);
     return await logoRef.getDownloadURL();
   },
 
   // Get teams for a user (either created or joined)
   async getUserTeams(userId: string) {
-    const teamsSnapshot = await db.collection('teams')
+    const teamsSnapshot = await firestore().collection('teams')
       .where('members', 'array-contains', { uid: userId })
       .get();
     
@@ -36,7 +38,7 @@ export const teamService = {
     memberId: string,
     status: 'accepted' | 'declined'
   ) {
-    const teamRef = db.collection('teams').doc(teamId);
+    const teamRef = firestore().collection('teams').doc(teamId);
     const team = await teamRef.get();
     
     if (!team.exists) {
@@ -62,7 +64,7 @@ export const teamService = {
 
   // Update team captain
   async updateTeamCaptain(teamId: string, newCaptainId: string) {
-    const teamRef = db.collection('teams').doc(teamId);
+    const teamRef = firestore().collection('teams').doc(teamId);
     const team = await teamRef.get();
     
     if (!team.exists) {
@@ -80,12 +82,12 @@ export const teamService = {
 
   // Update team details
   async updateTeam(teamId: string, updates: Partial<Team>) {
-    await db.collection('teams').doc(teamId).update(updates);
+    await firestore().collection('teams').doc(teamId).update(updates);
   },
 
   // Subscribe to team updates
   subscribeToTeamUpdates(teamId: string, callback: (team: Team) => void) {
-    return db.collection('teams')
+    return firestore().collection('teams')
       .doc(teamId)
       .onSnapshot((doc) => {
         if (doc.exists) {
@@ -98,7 +100,7 @@ export const teamService = {
 
   // Subscribe to user's teams
   subscribeToUserTeams(userId: string, callback: (teams: Team[]) => void) {
-    return db.collection('teams')
+    return firestore().collection('teams')
       .where('members', 'array-contains', { uid: userId })
       .onSnapshot((snapshot) => {
         const teams = snapshot.docs.map(doc => ({

@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --primary-color: #E84A21;
+}
+
+.text-primary {
+    color: #1C3561
+}
+
+

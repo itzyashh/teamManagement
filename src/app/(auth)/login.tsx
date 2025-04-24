@@ -13,11 +13,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/config/firebase';
-
+import { useAuth } from '@/providers/auth';
+import { useDispatch } from 'react-redux';
+import { setUser as setUserRedux } from '@/redux/reducers/User';
+import { getUser } from '@/services/userService';
 const Login = () => {
+  const { login } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('test@test.com');
   const [password, setPassword] = useState('test1234');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,9 +37,16 @@ const Login = () => {
     setLoading(true);
     
     try {
-        await signInWithEmailAndPassword(auth, email, password);
-
-
+       const user = await login({ email, password });
+      console.log(user);
+      const userData = await getUser(user.uid);
+      dispatch(setUserRedux({
+        email: user.email,
+        uid: user.uid,
+        username: userData?.username,
+        photoURL: userData?.photoURL || ''
+      }))
+      router.push('/');
     } catch (err: any) {
       setError(err.message || 'Failed to login');
     } finally {

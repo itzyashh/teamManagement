@@ -20,6 +20,7 @@ const Register = () => {
   const { register } = useAuth();
   const [formData, setFormData] = useState({
     fullName: 'Test',
+    username: 'test',
     email: 'test@test.com',
     password: 'test1234',
     confirmPassword: 'test1234',
@@ -30,7 +31,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     // Form validation
-    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword || !formData.username) {
       setError('Please fill in all fields');
       return;
     }
@@ -50,7 +51,7 @@ const Register = () => {
 
     try {
       // Create user with email and password
-      register(formData.email, formData.password).catch((err: any) => {
+      register(formData).catch((err: any) => {
         setError(err.message || 'Failed to register');
       })
 

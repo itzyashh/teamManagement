@@ -16,6 +16,25 @@ service cloud.firestore {
         teamData.createdBy == request.auth.uid;
     }
 
+    // Users collection rules
+    match /users/{userId} {
+      // Allow read if user is signed in
+      allow read: if isSignedIn();
+      
+      // Allow create if user is creating their own document
+      allow create: if isSignedIn() && 
+        userId == request.auth.uid;
+      
+      // Allow update if user is updating their own document
+      allow update: if isSignedIn() && 
+        userId == request.auth.uid;
+      
+      // Allow delete if user is deleting their own document
+      allow delete: if isSignedIn() && 
+        userId == request.auth.uid;
+    }
+
+    // Teams collection rules
     match /teams/{teamId} {
       // Allow read if user is a team member
       allow read: if isSignedIn() && 

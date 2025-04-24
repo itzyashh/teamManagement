@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import TeamReducer from "./reducers/Team";
+import UserReducer from "./reducers/User";
 export const store = configureStore({
     reducer:{
         teams: TeamReducer,
+        user: UserReducer
     }
 })
 

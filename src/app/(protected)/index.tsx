@@ -7,12 +7,29 @@ import { signOut } from 'firebase/auth'
 import { auth } from '@/config/firebase'
 import { deleteUser } from 'firebase/auth'
 import { useAuth } from '@/providers/auth'
+import { useDispatch, useSelector } from 'react-redux'
+import { clearUser } from '@/redux/reducers/User'
 const Home = () => {
-  const { user } = useAuth()
+  const { user:FirebaseUser } = useAuth()
+  const user = useSelector((state: any) => state.user)
+  console.log('home',user);
+
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(clearUser());
+    signOut(auth);
+  }
+
+  const handleDeleteAccount = () => {
+    deleteUser(FirebaseUser!);
+    dispatch(clearUser());
+  }
+  
   return (
     <SafeAreaView className='flex-1 justify-center items-center'>
-      <Button title='Logout' onPress={() => signOut(auth)} />
-      <Button title='Delete Account' onPress={() => deleteUser(user!)} />
+      <Button title='Logout' onPress={handleLogout} />
+      <Button title='Delete Account' onPress={handleDeleteAccount} />
       <View className='flex-row items-center gap-4'>
         <View className='w-full h-[1px] bg-gray-300' />
         <Text>Or</Text>

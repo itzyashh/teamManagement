@@ -90,7 +90,7 @@ const Home = () => {
           return (
             <Pressable
             onPress={() => router.push(`/team/${item.id}`)}
-            className='w-full  justify-between items-center gap-2 border border-gray-300 rounded-lg p-2 mb-2'>
+            className='w-full justify-between items-center gap-2 border border-gray-300 rounded-lg p-2 mb-2'>
               <View className='w-full p-2 flex-row justify-between items-center gap-2'>
                 <View className='flex-row items-center gap-2'>
                 <Image source={item.logoUrl ? { uri: item.logoUrl } : require('../../../assets/user.jpeg')} className='w-11 h-11 rounded-lg' />
@@ -114,14 +114,14 @@ const Home = () => {
       />
 
   
-      <View className='flex-row items-center gap-4 flex-1'>
+      <View className='flex-row items-center gap-4 flex-initial'>
         <View className='w-full h-[1px] bg-gray-300' />
         <Text className='text-primary text-lg font-bold'>Or</Text>
         <View className='w-full h-[1px] bg-gray-300' />
       </View>
 
 
-      <View className='flex-1  items-center'>
+      <View className='flex-1 mt-10 items-center'>
       <TouchableOpacity 
       onPress={() => router.push('/create')}
       style={{ borderColor: colors.primary }}

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, SafeAreaView, TextInput, Image, ScrollView } from 'react-native';
 import React, { useState } from 'react';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 import { getProfilePicture } from 'utils';
@@ -99,6 +99,7 @@ const CreateTeam = () => {
 
       // upload team logo to storage
       await teamService.uploadTeamLogo(teamId, teamLogo);
+      router.back();
     } catch (error) {
       console.log('Team creation error:', error);
     }

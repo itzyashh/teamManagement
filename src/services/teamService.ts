@@ -139,10 +139,29 @@ export const teamService = {
     await updateDoc(teamRef, { members: updatedMembers });
   },
 
-  // Update team details
-  async updateTeam(teamId: string, updates: Partial<Team>) {
+  // Add member to team
+  async addMemberToTeam(teamId: string, member: TeamMember) {
     if (!auth.currentUser) {
-      throw new Error('User must be authenticated to update team');
+      throw new Error('User must be authenticated to add a member to a team');
+    }
+    
+    const teamRef = doc(db, 'teams', teamId);
+    const teamDoc = await getDoc(teamRef);
+    
+    if (!teamDoc.exists()) {
+      throw new Error('Team not found');
+    }
+    
+    const teamData = teamDoc.data() as Team;
+    const updatedMembers = [...teamData.members, member];
+    await updateDoc(teamRef, { members: updatedMembers });
+  },
+  
+
+  // Update team
+  async updateTeam(teamId: string, updates: Partial<Omit<Team, 'id' | 'createdAt' | 'createdBy'>>): Promise<void> {
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to update a team');
     }
     
     const teamRef = doc(db, 'teams', teamId);
@@ -215,6 +234,27 @@ export const teamService = {
         console.error('Error subscribing to user teams:', error);
       }
     );
+  },
+
+  // Get a single team by ID
+  async getTeam(teamId: string): Promise<Team | null> {
+    try {
+      const teamRef = doc(db, 'teams', teamId);
+      const teamDoc = await getDoc(teamRef);
+      
+      if (!teamDoc.exists()) {
+        return null;
+      }
+      
+      const teamData = teamDoc.data() as Omit<Team, 'id'>;
+      return {
+        ...teamData,
+        id: teamId
+      };
+    } catch (error) {
+      console.error('Error getting team:', error);
+      throw error;
+    }
   }
 }; 
 

@@ -51,7 +51,6 @@ const CreateTeam = () => {
   const handleAddPlayer = (player: any, playerPosition: string) => {
     const newPlayer = {
       playerPosition: playerPosition,
-      status: 'invited',
       searchMethod: player.searchMethod,
       contactMethod: player.searchMethod === 'email' ? { type: 'email' as const, value: player.email } : { type: 'username' as const, value: player.username },
       role: 'player',
@@ -74,7 +73,8 @@ const CreateTeam = () => {
           contactMethod: member.contactMethod,
           invitationStatus: member.role === 'captain' ? 'accepted' as InvitationStatus : 'invited' as InvitationStatus,
           role: member.role as MemberRole,
-          joinedAt: new Date()
+          joinedAt: new Date(),
+          ...member
         })),
         logoUrl: teamLogo,
         createdBy: user.id,

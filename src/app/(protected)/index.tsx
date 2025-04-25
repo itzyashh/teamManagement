@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, TouchableOpacity, Button, ScrollView, FlatList, Image, Pressable } from 'react-native'
+import { View, Text, SafeAreaView, TouchableOpacity, Button, ScrollView, FlatList, Image, Pressable, RefreshControl    } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { AntDesign, Entypo } from '@expo/vector-icons'
 import { colors } from '@/constants/colors'
@@ -17,8 +17,14 @@ const Home = () => {
   const user = useSelector((state: any) => state.user)
   console.log('home',user);
   const [teams, setTeams] = useState<Team[]>([]);
-
+  const [refreshing, setRefreshing] = useState(false);
   const dispatch = useDispatch();
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    getTeams();
+    setRefreshing(false);
+  }
 
   const handleLogout = () => {
     dispatch(clearUser());
@@ -77,11 +83,14 @@ const Home = () => {
         data={teams}
         className="w-full px-4 flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={renderEmptyTeams}
         ListHeaderComponent={renderHeader}
         renderItem={({ item }) => {
           return (
-            <View className='w-full  justify-between items-center gap-2 border border-gray-300 rounded-lg p-2 mb-2'>
+            <Pressable
+            onPress={() => router.push(`/team/${item.id}`)}
+            className='w-full  justify-between items-center gap-2 border border-gray-300 rounded-lg p-2 mb-2'>
               <View className='w-full p-2 flex-row justify-between items-center gap-2'>
                 <View className='flex-row items-center gap-2'>
                 <Image source={item.logoUrl ? { uri: item.logoUrl } : require('../../../assets/user.jpeg')} className='w-11 h-11 rounded-lg' />
@@ -99,7 +108,7 @@ const Home = () => {
                 <Text className='text-primary font-bold ml-4'>Team Members: </Text>
                 <Text className='text-primary font-bold ml-4'>{item.members.length} members</Text>
               </View>
-            </View>
+            </Pressable>
           )
         }}
       />

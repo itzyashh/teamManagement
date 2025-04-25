@@ -45,7 +45,7 @@ service cloud.firestore {
       allow create: if isSignedIn();
       
       // Allow update if user is team member
-      allow update: if isSignedIn() && isTeamMember(resource.data);
+      allow update: if isSignedIn() 
       
       // Allow delete if user is auth
       allow delete: if isSignedIn() 

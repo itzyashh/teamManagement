@@ -64,6 +64,7 @@ const CreateTeam = () => {
     const newPlayer = {
       playerPosition: playerPosition,
       searchMethod: player.searchMethod,
+      invitationStatus: 'invited',
       contactMethod: player.searchMethod === 'email' ? { type: 'email' as const, value: player.email } : { type: 'username' as const, value: player.username },
       role: 'player',
       ...player
@@ -98,7 +99,7 @@ const CreateTeam = () => {
       });
 
       // upload team logo to storage
-      await teamService.uploadTeamLogo(teamId, teamLogo);
+      // await teamService.uploadTeamLogo(teamId, teamLogo);
       router.back();
     } catch (error) {
       console.log('Team creation error:', error);

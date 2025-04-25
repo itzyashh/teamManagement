@@ -38,10 +38,10 @@ const PlayerPosition = ({
       <View className='flex-row justify-between items-center'>
         <View className='flex-row items-center gap-2'>
           <Text className={`text-primary text-lg font-semibold`}>{positionNumber}</Text>
-          {playerExists && playerExists.status === 'invited' && (
+          {playerExists && playerExists.invitationStatus === 'invited' && (
             <View className='px-2 bg-gray-400 rounded-full'>
               <Text className={`text-white text-sm font-semibold capitalize`}>
-                {playerExists.searchMethod} - {playerExists.status}
+                {playerExists.searchMethod} - {playerExists.invitationStatus}
               </Text>
             </View>
           )}

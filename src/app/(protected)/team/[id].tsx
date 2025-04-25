@@ -227,7 +227,7 @@ const TeamDetailScreen = () => {
         }}
       />
 
-      <ScrollView className="pt-4 px-4 gap-4" contentContainerClassName="gap-4">
+      <ScrollView className="pt-4 px-4 gap-4 mt-10" contentContainerClassName="gap-4">
         <View className="justify-center items-center">
           <View className="w-24 h-24 border border-gray-300 rounded-2xl border-dashed justify-center items-center">
             {teamLogo ? (

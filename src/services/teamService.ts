@@ -18,15 +18,21 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 export const teamService = {
   // Create a new team
   async createTeam(team: Omit<Team, 'id' | 'createdAt'>): Promise<string> {
-    if (!auth.currentUser) {
-      throw new Error('User must be authenticated to create a team');
+    console.log('Creating team:', team);
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User must be authenticated to create a team');
+      }
+      
+      const teamRef = await addDoc(collection(db, 'teams'), {
+        ...team,
+        createdAt: new Date(),
+      });
+      return teamRef.id;
+    } catch (error) {
+      console.error('Error creating team:', error);
+      throw error;
     }
-    
-    const teamRef = await addDoc(collection(db, 'teams'), {
-      ...team,
-      createdAt: new Date(),
-    });
-    return teamRef.id;
   },
 
   // Upload team logo

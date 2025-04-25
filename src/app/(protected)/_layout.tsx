@@ -21,13 +21,8 @@ const ProtectedLayout = () => {
   }
   const setUser = async () => {
     const userData = await getUser(user.uid);
-    dispatch(setUserRedux({
-      email: user.email,
-      uid: user.uid,
-      username: userData?.username,
-      fullName: userData?.fullName,
-      photoURL: userData?.photoURL || ''
-    }))
+    console.log(userData,'userData');
+    dispatch(setUserRedux({...userData, createdAt: userData?.createdAt?.toDate()?.toISOString()}))
   }
 
   useEffect(() => {

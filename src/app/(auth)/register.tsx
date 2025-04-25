@@ -106,6 +106,23 @@ const Register = () => {
                 />
               </View>
             </View>
+            {/* Username Input */}
+            <View>
+              <Text className="text-gray-700 mb-2 font-medium">
+                Username
+              </Text>
+              <View className="flex-row items-center border border-gray-300 rounded-lg px-4 py-3 bg-gray-50">
+                <Ionicons name="person-outline" size={20} color="#666" />
+                <TextInput
+                  className="flex-1 ml-2 text-gray-800"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChangeText={(text) => setFormData({ ...formData, username: text })}
+                  autoCapitalize="none"
+                  autoComplete="username"
+                />
+              </View>
+            </View>
 
             {/* Email Input */}
             <View>

@@ -5,7 +5,7 @@ const initialState = {
     fullName: '',
     email: '',
     photoURL: '',
-    uid: '',
+    id: '',
 }
 
 const userSlice = createSlice({
@@ -17,14 +17,14 @@ const userSlice = createSlice({
             state.fullName = action.payload.fullName
             state.email = action.payload.email
             state.photoURL = action.payload.photoURL
-            state.uid = action.payload.uid
+            state.id = action.payload.id
         },
         clearUser: (state) => {
             state.username = ''
             state.fullName = ''
             state.email = ''
             state.photoURL = ''
-            state.uid = ''
+            state.id = ''
         }
     }
 })

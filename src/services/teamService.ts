@@ -37,13 +37,18 @@ export const teamService = {
 
   // Upload team logo
   async uploadTeamLogo(teamId: string, logoFile: any): Promise<string> {
-    if (!auth.currentUser) {
-      throw new Error('User must be authenticated to upload team logo');
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User must be authenticated to upload team logo');
+      }
+      
+      const logoRef = ref(storage, `team-logos/${teamId}`);
+      await uploadBytes(logoRef, logoFile);
+      return await getDownloadURL(logoRef);
+    } catch (error) {
+      console.error('Error uploading team logo:', error);
+      throw error;
     }
-    
-    const logoRef = ref(storage, `team-logos/${teamId}`);
-    await uploadBytes(logoRef, logoFile);
-    return await getDownloadURL(logoRef);
   },
 
   // Get teams for a user (either created or joined)

@@ -9,13 +9,13 @@ import { teamService } from '@/services/teamService';
 import { searchUser } from '@/services/userService';
 import { TeamMember, InvitationStatus, MemberRole } from '@/types/team';
 import PlayerPosition from '@/components/team/PlayerPosition';
-
+import * as ImagePicker from 'expo-image-picker';
 const CreateTeam = () => {
   const user = useSelector((state: any) => state.user);
   console.log(user,'user at create');
   const [userProfilePicture, setUserProfilePicture] = useState(require('../../../assets/user.jpeg'));
   const [teamName, setTeamName] = useState('');
-  const [teamLogo, setTeamLogo] = useState(null);
+  const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const [teamMembers, setTeamMembers] = useState<any[]>([
     {
       id: user.id,
@@ -47,6 +47,18 @@ const CreateTeam = () => {
       setSearchResults([]);
     }
   }
+
+  const pickImage = async () => {
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setTeamLogo(result.assets[0].uri);
+    }
+  }
   console.log(teamMembers,'teamMembers');
   const handleAddPlayer = (player: any, playerPosition: string) => {
     const newPlayer = {
@@ -65,7 +77,11 @@ const CreateTeam = () => {
   const handleCreateTeam = async () => {
     console.log('Create Team');
     try {
-       await teamService.createTeam({
+
+      // upload team logo to storage
+
+
+      const teamId = await teamService.createTeam({
         name: teamName || 'Untitled Team',
         members: teamMembers.map(member => ({
           uid: member.id,
@@ -76,10 +92,13 @@ const CreateTeam = () => {
           joinedAt: new Date(),
           ...member
         })),
-        logoUrl: teamLogo,
+        logoUrl: null,
         createdBy: user.id,
         isRegistrationComplete: false,
       });
+
+      // upload team logo to storage
+      await teamService.uploadTeamLogo(teamId, teamLogo);
     } catch (error) {
       console.log('Team creation error:', error);
     }
@@ -99,11 +118,17 @@ const CreateTeam = () => {
 
       <ScrollView className='pt-10 px-4 gap-4' contentContainerClassName='gap-4'>
         <View className='justify-center items-center'>
-          <View className='w-24 h-24 border border-gray-300 rounded-2xl border-dashed justify-center items-center'>
+         {teamLogo ? (
+          <Image source={{ uri: teamLogo }} className='w-24 h-24 rounded-2xl' />
+         ) : (
+          <TouchableOpacity
+           onPress={pickImage}
+           className='w-24 h-24 border border-gray-300 rounded-2xl border-dashed justify-center items-center'>
               <View style={{ backgroundColor: colors.primary }} className={`w-12 h-12 justify-center items-center rounded-full`}>
               <MaterialCommunityIcons name="camera-plus-outline" size={24} color="white" />
               </View>
-          </View>
+          </TouchableOpacity>
+         )}
           <Text className={`mt-2 text-primary text-lg font-semibold`}>Team Logo</Text>
         </View>
 

@@ -10,6 +10,7 @@ import { TeamMember, InvitationStatus, MemberRole, Team } from '@/types/team';
 import PlayerPosition from '@/components/team/PlayerPosition';
 import UserSearchResults from '@/components/team/UserSearchResults';
 import TeamMemberItem from '@/components/team/TeamMemberItem';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoidingScrollView';
 
 const TeamDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -214,7 +215,7 @@ const TeamDetailScreen = () => {
   console.log('teamMembers2', teamMembers);
   // Render team management UI for captains and members
   return (
-    <SafeAreaView className="flex-1">
+    <KeyboardAvoidingScrollView>
       <Stack.Screen
         options={{
           title: team?.name || 'Team Details',
@@ -312,7 +313,7 @@ const TeamDetailScreen = () => {
           </View>
         </View>
       )}
-    </SafeAreaView>
+    </KeyboardAvoidingScrollView>
   );
 };
 

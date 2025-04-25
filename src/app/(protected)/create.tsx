@@ -10,6 +10,7 @@ import { searchUser } from '@/services/userService';
 import { TeamMember, InvitationStatus, MemberRole } from '@/types/team';
 import PlayerPosition from '@/components/team/PlayerPosition';
 import * as ImagePicker from 'expo-image-picker';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoidingScrollView';
 const CreateTeam = () => {
   const user = useSelector((state: any) => state.user);
   console.log(user,'user at create');
@@ -107,7 +108,7 @@ const CreateTeam = () => {
   }
 
   return (
-    <SafeAreaView className='flex-1'>
+    <KeyboardAvoidingScrollView>
       <Stack.Screen
         options={{
           headerRight: () => (
@@ -118,7 +119,7 @@ const CreateTeam = () => {
         }}
       />
 
-      <ScrollView className='pt-10 px-4 gap-4' contentContainerClassName='gap-4'>
+      <View className='pt-10 px-4 gap-4'>
         <View className='justify-center items-center'>
          {teamLogo ? (
           <Image source={{ uri: teamLogo }} className='w-24 h-24 rounded-2xl' />
@@ -200,7 +201,7 @@ const CreateTeam = () => {
           onFocus={setActiveTextInput}
           onAddPlayer={handleAddPlayer}
         />
-      </ScrollView>
+      </View>
       
       <TouchableOpacity
         className='bg-primary p-4 rounded-full w-[90%] items-center justify-center mx-auto mb-4'
@@ -208,7 +209,7 @@ const CreateTeam = () => {
       >
         <Text className={`text-white text-lg font-semibold`}>Create Team</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </KeyboardAvoidingScrollView>
   );
 };
 
